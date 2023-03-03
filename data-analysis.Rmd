@@ -1,0 +1,84 @@
+---
+title: "info-challenge-analysis"
+output: html_document
+date: "2023-03-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(googlesheets4)
+library(dplyr)
+```
+
+## Load data
+```{r}
+florence <- read_sheet("https://docs.google.com/spreadsheets/d/1XPmYZkqSipp7rzIhznZGAKlixzHubownr7zJc2UItjg/edit#gid=1282257177", sheet= "Florence 2018")
+
+dorian <- read_sheet("https://docs.google.com/spreadsheets/d/1XPmYZkqSipp7rzIhznZGAKlixzHubownr7zJc2UItjg/edit#gid=1282257177", sheet = "Dorian 2019")
+```
+
+
+## clean data
+```{r}
+florence <- florence %>%
+  select(-c(1,8:11)) %>%
+  mutate(hurricane = "florence 2018")
+
+dorian <- dorian %>%
+  select(-c(1,8)) %>%
+  mutate(hurricane = "dorian 2019")
+
+
+both_hurricanes <- florence %>%
+  full_join(dorian)
+```
+
+
+## Summary stats
+```{r}
+#Most used platform
+platforms <- both_hurricanes %>%
+  group_by(platform) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count))
+
+#Most used ICS number
+ics_numbers <- both_hurricanes %>%
+  group_by(ICS209) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count))
+
+#Most frequent time for each hurricane
+dorian_time <- dorian %>%
+  mutate(hour = str_replace(time, ":\\d+", "")) %>%
+  group_by(hour) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count))
+
+florence_time <- florence %>%
+  mutate(hour = str_replace(time, ":\\d+", "")) %>%
+  group_by(hour) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count))
+
+#Most frequent item per date for each hurricane
+dorian_date <- dorian %>%
+  group_by(date) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count))
+
+florence_date <- florence %>%
+  group_by(date) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count))
+
+```
+
+
